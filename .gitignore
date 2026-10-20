@@ -11,3 +11,5 @@
 /app/release
 *.jks
 *.keystore
+keystore.properties
+/screenshots
