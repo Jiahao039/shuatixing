@@ -13,3 +13,4 @@
 *.keystore
 keystore.properties
 /screenshots
+/dist
