@@ -38,6 +38,20 @@ class NormalizerTest {
     }
 
     @Test
+    fun `removes headers from a two page document`() {
+        val input = listOf(
+            TextLine("题库页眉", 0, 40f),
+            TextLine("1. 第一页题目", 0, 100f),
+            TextLine("题库页眉", 1, 40f),
+            TextLine("2. 第二页题目", 1, 100f),
+        )
+        assertEquals(
+            listOf("1. 第一页题目", "2. 第二页题目"),
+            Normalizer.normalize(input).map { it.text },
+        )
+    }
+
+    @Test
     fun `keeps lines repeated only on a minority of pages`() {
         val input = listOf(
             TextLine("答案：A", 0, 200f),

@@ -13,7 +13,7 @@ object Normalizer {
             .filter { it.text.isNotEmpty() }
 
         val pageCount = cleaned.map { it.page }.distinct().size
-        val repeatedKeys = if (pageCount >= 3) {
+        val repeatedKeys = if (pageCount >= 2) {
             cleaned.groupBy { headerKey(it) }
                 .filterValues { group -> group.map { it.page }.distinct().size > pageCount / 2.0 }
                 .keys

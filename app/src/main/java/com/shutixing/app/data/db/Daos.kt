@@ -159,10 +159,10 @@ interface AttemptDao {
     @Query("SELECT DISTINCT localDate FROM attempts")
     suspend fun activeDates(): List<String>
 
-    @Query("SELECT COUNT(*) FROM attempts WHERE localDate = :date AND mode = 'DAILY'")
+    @Query("SELECT COUNT(*) FROM attempts WHERE localDate = :date")
     suspend fun countByDate(date: String): Int
 
-    @Query("SELECT COUNT(*) FROM attempts WHERE localDate = :date AND mode = 'DAILY' AND isCorrect = 1")
+    @Query("SELECT COUNT(*) FROM attempts WHERE localDate = :date AND isCorrect = 1")
     suspend fun correctByDate(date: String): Int
 
     @Query("DELETE FROM attempts")
