@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,8 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shutixing.app.ui.theme.CorrectGreen
 import com.shutixing.app.ui.theme.HeroGradientEnd
 import com.shutixing.app.ui.theme.HeroGradientStart
+import com.shutixing.app.ui.theme.WrongRed
 
 @Composable
 fun AppCard(
@@ -151,5 +155,29 @@ fun PillChip(
             style = MaterialTheme.typography.labelMedium,
             color = contentColor,
         )
+    }
+}
+
+@Composable
+fun QuickStatRow(
+    accuracy: Float,
+    hasAnswers: Boolean,
+    wrongCount: Int,
+    mastered: Int,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        StatTile(
+            label = "今日正确率",
+            value = if (hasAnswers) "${(accuracy * 100).toInt()}%" else "—",
+            accent = CorrectGreen,
+        )
+        Box(Modifier.width(1.dp).height(36.dp).background(MaterialTheme.colorScheme.outlineVariant))
+        StatTile(label = "错题", value = "$wrongCount", accent = WrongRed)
+        Box(Modifier.width(1.dp).height(36.dp).background(MaterialTheme.colorScheme.outlineVariant))
+        StatTile(label = "已掌握", value = "$mastered", accent = MaterialTheme.colorScheme.primary)
     }
 }
