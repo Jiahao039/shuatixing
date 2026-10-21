@@ -186,7 +186,7 @@ fun SettingsScreen(
                     Icon(Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text("刷题星 0.1.0", style = MaterialTheme.typography.titleMedium)
+                        Text("刷题星 0.1.1", style = MaterialTheme.typography.titleMedium)
                         Text(
                             "完全离线 · 数据只保存在本机",
                             style = MaterialTheme.typography.labelSmall,

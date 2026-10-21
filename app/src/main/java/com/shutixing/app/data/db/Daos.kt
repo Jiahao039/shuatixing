@@ -48,6 +48,13 @@ interface QuestionDao {
     @Query("SELECT * FROM questions WHERE bankId = :bankId ORDER BY orderIndex")
     fun observeByBank(bankId: String): Flow<List<QuestionEntity>>
 
+    @Query(
+        """SELECT r.* FROM review_states r
+           JOIN questions q ON q.id = r.questionId
+           WHERE q.bankId = :bankId""",
+    )
+    fun observeReviewsByBank(bankId: String): Flow<List<ReviewStateEntity>>
+
     @Query("SELECT * FROM questions WHERE bankId = :bankId ORDER BY orderIndex")
     suspend fun getByBank(bankId: String): List<QuestionEntity>
 
@@ -89,6 +96,13 @@ interface QuestionDao {
 
     @Query("SELECT COUNT(*) FROM questions WHERE bankId = :bankId")
     suspend fun countByBank(bankId: String): Int
+
+    @Query(
+        """SELECT COUNT(DISTINCT q.id) FROM questions q
+           JOIN attempts a ON a.questionId = q.id
+           WHERE q.bankId = :bankId""",
+    )
+    suspend fun attemptedByBank(bankId: String): Int
 
     @Query(
         """SELECT COUNT(*) FROM questions q

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -218,20 +220,28 @@ private fun PracticeContent(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
-            GradientButton(
-                text = if (state.submitted) "下一题" else "提交答案",
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    if (state.submitted) onNext() else onSubmit()
-                },
-                enabled = state.submitted || state.selected.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth(),
-                brush = if (state.submitted) {
-                    Brush.horizontalGradient(listOf(InkBlue, DeepTeal))
-                } else {
-                    Brush.horizontalGradient(listOf(AmberGradientStart, AmberGradientEnd))
-                },
-            )
+            when {
+                state.submitted -> GradientButton(
+                    text = "下一题",
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onNext()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    brush = Brush.horizontalGradient(listOf(InkBlue, DeepTeal)),
+                )
+                state.current?.type == QuestionType.MULTIPLE -> GradientButton(
+                    text = "提交答案",
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onSubmit()
+                    },
+                    enabled = state.selected.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth(),
+                    brush = Brush.horizontalGradient(listOf(AmberGradientStart, AmberGradientEnd)),
+                )
+                else -> AutoSubmitHint()
+            }
         }
     }
 
@@ -338,6 +348,30 @@ private fun FeedbackCard(question: Question, state: PracticeUiState) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AutoSubmitHint() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 52.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            Icons.Rounded.TouchApp,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "选择后自动判分",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

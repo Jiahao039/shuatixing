@@ -9,6 +9,7 @@ import com.shutixing.app.data.db.toDomain
 import com.shutixing.app.data.db.toEntity
 import com.shutixing.app.domain.model.Bank
 import com.shutixing.app.domain.model.Question
+import com.shutixing.app.domain.model.ReviewState
 import com.shutixing.app.parser.StemHasher
 import com.shutixing.app.parser.model.ParsedQuestion
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,11 @@ class BankRepository(private val db: AppDatabase) {
 
     fun observeQuestions(bankId: String): Flow<List<Question>> =
         db.questionDao().observeByBank(bankId).map { rows -> rows.map { it.toDomain() } }
+
+    fun observeReviewStates(bankId: String): Flow<Map<String, ReviewState>> =
+        db.questionDao().observeReviewsByBank(bankId).map { rows ->
+            rows.associate { it.questionId to it.toDomain() }
+        }
 
     suspend fun allBanks(): List<Bank> = db.bankDao().getAll().map { it.toDomain() }
 

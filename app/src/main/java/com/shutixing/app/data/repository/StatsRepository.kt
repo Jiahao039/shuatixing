@@ -31,6 +31,7 @@ class StatsRepository(private val db: AppDatabase) {
             bankName = bank.name,
             total = db.questionDao().countByBank(bank.id),
             mastered = db.questionDao().masteredByBank(bank.id),
+            attempted = db.questionDao().attemptedByBank(bank.id),
         )
     }
 }

@@ -96,13 +96,13 @@ fun BanksScreen(
                                 Text(bank.bankName, style = MaterialTheme.typography.titleLarge)
                                 Spacer(Modifier.height(2.dp))
                                 Text(
-                                    "${bank.total} 题 · 已掌握 ${(bank.mastery * 100).toInt()}%",
+                                    "${bank.total} 题 · 已刷 ${bank.attempted} · 掌握 ${(bank.mastery * 100).toInt()}%",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 Spacer(Modifier.height(10.dp))
                                 LinearProgressIndicator(
-                                    progress = { bank.mastery },
+                                    progress = { bank.practiceProgress },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(6.dp)

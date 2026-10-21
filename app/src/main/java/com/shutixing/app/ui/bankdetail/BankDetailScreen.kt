@@ -63,8 +63,10 @@ import com.shutixing.app.domain.model.QuestionType
 import com.shutixing.app.parser.model.ParsedQuestion
 import com.shutixing.app.ui.components.AppCard
 import com.shutixing.app.ui.components.GradientButton
+import com.shutixing.app.ui.components.PillChip
 import com.shutixing.app.ui.components.QuestionTypeBadge
 import com.shutixing.app.ui.theme.Amber
+import com.shutixing.app.ui.theme.CorrectGreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,7 +122,7 @@ fun BankDetailScreen(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "${state.questions.size} 道题",
+                    "共 ${state.items.size} 题 · 已刷 ${state.practiced} · 掌握 ${state.mastered}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -172,7 +174,7 @@ fun BankDetailScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    if (state.questions.isEmpty()) "题库还是空的，点击右上角添加题目" else "没有匹配的题目",
+                    if (state.items.isEmpty()) "题库还是空的，点击右上角添加题目" else "没有匹配的题目",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -183,7 +185,8 @@ fun BankDetailScreen(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(state.filtered, key = { it.id }) { question ->
+                items(state.filtered, key = { it.question.id }) { item ->
+                    val question = item.question
                     AppCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -191,7 +194,11 @@ fun BankDetailScreen(
                     ) {
                         Row(verticalAlignment = Alignment.Top) {
                             Column(Modifier.weight(1f)) {
-                                QuestionTypeBadge(question.type)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    QuestionTypeBadge(question.type)
+                                    Spacer(Modifier.width(6.dp))
+                                    ProgressChip(item)
+                                }
                                 Spacer(Modifier.height(8.dp))
                                 Text(
                                     question.stem,
@@ -273,6 +280,23 @@ fun BankDetailScreen(
             },
         )
     }
+}
+
+@Composable
+private fun ProgressChip(item: BankQuestionItem) {
+    val colors = MaterialTheme.colorScheme
+    val (container, content) = when (item.progress) {
+        QuestionProgress.NEW -> colors.surfaceVariant to colors.onSurfaceVariant
+        QuestionProgress.LEARNING -> colors.primary.copy(alpha = 0.12f) to colors.primary
+        QuestionProgress.WRONG -> colors.error.copy(alpha = 0.12f) to colors.error
+        QuestionProgress.MASTERED -> CorrectGreen.copy(alpha = 0.14f) to CorrectGreen
+    }
+    val label = if (item.progress == QuestionProgress.WRONG) {
+        "错题 ${item.review?.wrongCount ?: 0} 次"
+    } else {
+        item.progress.label
+    }
+    PillChip(text = label, container = container, contentColor = content)
 }
 
 @Composable

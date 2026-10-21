@@ -105,12 +105,13 @@ class PracticeViewModel(
         val current = _state.value
         if (current.submitted) return
         val question = current.current ?: return
-        val next = if (question.type == QuestionType.MULTIPLE) {
-            if (key in current.selected) current.selected - key else current.selected + key
+        if (question.type == QuestionType.MULTIPLE) {
+            val next = if (key in current.selected) current.selected - key else current.selected + key
+            _state.update { it.copy(selected = next) }
         } else {
-            setOf(key)
+            _state.update { it.copy(selected = setOf(key)) }
+            submit()
         }
-        _state.update { it.copy(selected = next) }
     }
 
     fun submit() {

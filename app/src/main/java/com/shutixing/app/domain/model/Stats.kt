@@ -15,6 +15,8 @@ data class BankMastery(
     val bankName: String,
     val total: Int,
     val mastered: Int,
+    val attempted: Int = 0,
 ) {
     val mastery: Float get() = if (total == 0) 0f else mastered.toFloat() / total
+    val practiceProgress: Float get() = if (total == 0) 0f else attempted.toFloat() / total
 }

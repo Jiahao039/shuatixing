@@ -14,6 +14,7 @@ import com.shutixing.app.parser.model.ParsedQuestion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -22,20 +23,28 @@ enum class DetailFilter { ALL, FAVORITE, SINGLE, MULTIPLE, JUDGE }
 data class BankDetailUiState(
     val loading: Boolean = true,
     val bankName: String = "",
-    val questions: List<Question> = emptyList(),
+    val items: List<BankQuestionItem> = emptyList(),
     val query: String = "",
     val filter: DetailFilter = DetailFilter.ALL,
 ) {
-    val filtered: List<Question>
+    val practiced: Int get() = items.count { it.review?.lastAnsweredAt != null }
+    val mastered: Int get() = items.count { it.progress == QuestionProgress.MASTERED }
+    val wrong: Int get() = items.count { it.progress == QuestionProgress.WRONG }
+
+    val filtered: List<BankQuestionItem>
         get() {
             val byType = when (filter) {
-                DetailFilter.ALL -> questions
-                DetailFilter.FAVORITE -> questions.filter { it.isFavorite }
-                DetailFilter.SINGLE -> questions.filter { it.type == QuestionType.SINGLE }
-                DetailFilter.MULTIPLE -> questions.filter { it.type == QuestionType.MULTIPLE }
-                DetailFilter.JUDGE -> questions.filter { it.type == QuestionType.JUDGE }
+                DetailFilter.ALL -> items
+                DetailFilter.FAVORITE -> items.filter { it.question.isFavorite }
+                DetailFilter.SINGLE -> items.filter { it.question.type == QuestionType.SINGLE }
+                DetailFilter.MULTIPLE -> items.filter { it.question.type == QuestionType.MULTIPLE }
+                DetailFilter.JUDGE -> items.filter { it.question.type == QuestionType.JUDGE }
             }
-            return if (query.isBlank()) byType else byType.filter { it.stem.contains(query.trim(), ignoreCase = true) }
+            return if (query.isBlank()) {
+                byType
+            } else {
+                byType.filter { it.question.stem.contains(query.trim(), ignoreCase = true) }
+            }
         }
 }
 
@@ -50,8 +59,13 @@ class BankDetailViewModel(
         viewModelScope.launch {
             val bank = bankRepository.getBank(bankId)
             if (bank != null) _state.update { it.copy(bankName = bank.name) }
-            bankRepository.observeQuestions(bankId).collect { questions ->
-                _state.update { it.copy(loading = false, questions = questions) }
+            combine(
+                bankRepository.observeQuestions(bankId),
+                bankRepository.observeReviewStates(bankId),
+            ) { questions, reviews ->
+                questions.map { question -> BankQuestionItem(question, reviews[question.id]) }
+            }.collect { items ->
+                _state.update { it.copy(loading = false, items = items) }
             }
         }
     }
