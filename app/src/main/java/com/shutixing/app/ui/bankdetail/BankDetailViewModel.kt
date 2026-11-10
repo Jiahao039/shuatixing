@@ -8,6 +8,7 @@ import com.shutixing.app.data.repository.BankRepository
 import com.shutixing.app.di.AppContainer
 import com.shutixing.app.domain.model.Bank
 import com.shutixing.app.domain.model.Question
+import com.shutixing.app.domain.model.QuestionRecord
 import com.shutixing.app.domain.model.QuestionType
 import com.shutixing.app.parser.StemHasher
 import com.shutixing.app.parser.model.ParsedQuestion
@@ -94,6 +95,8 @@ class BankDetailViewModel(
     }
 
     suspend fun exportData(): Pair<Bank, List<Question>>? = bankRepository.exportData(bankId)
+
+    suspend fun exportRecords(): Pair<Bank, List<QuestionRecord>>? = bankRepository.practiceRecords(bankId)
 
     fun deleteBank(onDone: () -> Unit) {
         viewModelScope.launch {

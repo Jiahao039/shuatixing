@@ -179,6 +179,13 @@ interface AttemptDao {
     @Query("SELECT COUNT(*) FROM attempts WHERE localDate = :date AND isCorrect = 1")
     suspend fun correctByDate(date: String): Int
 
+    @Query(
+        """SELECT * FROM attempts
+           WHERE questionId IN (SELECT id FROM questions WHERE bankId = :bankId)
+           ORDER BY answeredAt""",
+    )
+    suspend fun byBank(bankId: String): List<AttemptEntity>
+
     @Query("DELETE FROM attempts")
     suspend fun clear()
 }

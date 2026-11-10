@@ -9,7 +9,9 @@ import com.shutixing.app.data.db.toDomain
 import com.shutixing.app.data.db.toEntity
 import com.shutixing.app.domain.model.Bank
 import com.shutixing.app.domain.model.Question
+import com.shutixing.app.domain.model.QuestionRecord
 import com.shutixing.app.domain.model.ReviewState
+import com.shutixing.app.domain.model.sortedForReview
 import com.shutixing.app.parser.StemHasher
 import com.shutixing.app.parser.model.ParsedQuestion
 import kotlinx.coroutines.flow.Flow
@@ -132,6 +134,31 @@ class BankRepository(private val db: AppDatabase) {
     suspend fun exportData(bankId: String): Pair<Bank, List<Question>>? {
         val bank = db.bankDao().get(bankId)?.toDomain() ?: return null
         return bank to db.questionDao().getByBank(bankId).map { it.toDomain() }
+    }
+
+    suspend fun practiceRecords(bankId: String): Pair<Bank, List<QuestionRecord>>? {
+        val bank = db.bankDao().get(bankId)?.toDomain() ?: return null
+        val questions = db.questionDao().getByBank(bankId).map { it.toDomain() }
+        val states = db.reviewDao().getByIds(questions.map { it.id })
+            .associate { it.questionId to it.toDomain() }
+        val attemptsByQuestion = db.attemptDao().byBank(bankId)
+            .map { it.toDomain() }
+            .groupBy { it.questionId }
+
+        val records = questions.map { question ->
+            val attempts = attemptsByQuestion[question.id].orEmpty()
+            val last = attempts.maxByOrNull { it.answeredAt }
+            QuestionRecord(
+                order = question.orderIndex + 1,
+                question = question,
+                review = states[question.id],
+                attemptCount = attempts.size,
+                correctCount = attempts.count { it.isCorrect },
+                lastSelectedAnswer = last?.selectedAnswer,
+                lastAnsweredAt = last?.answeredAt,
+            )
+        }.sortedForReview()
+        return bank to records
     }
 
     suspend fun findByHash(hash: String): Int = db.questionDao().countByHash(hash)

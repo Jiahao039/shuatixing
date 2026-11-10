@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Assessment
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.Search
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shutixing.app.data.export.BankExporter
+import com.shutixing.app.data.export.RecordExporter
 import com.shutixing.app.domain.answer.AnswerChecker
 import com.shutixing.app.domain.model.Option
 import com.shutixing.app.domain.model.Question
@@ -106,6 +108,29 @@ fun BankDetailScreen(
         }
     }
 
+    val recordsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/markdown"),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val data = viewModel.exportRecords()
+                if (data != null) {
+                    runCatching {
+                        withContext(Dispatchers.IO) {
+                            context.contentResolver.openOutputStream(uri)?.use { stream ->
+                                RecordExporter.write(stream, data.first, data.second)
+                            }
+                        }
+                    }.onSuccess {
+                        Toast.makeText(context, "做题记录已导出", Toast.LENGTH_SHORT).show()
+                    }.onFailure {
+                        Toast.makeText(context, "导出失败：${it.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -134,6 +159,11 @@ fun BankDetailScreen(
                 onClick = { exportLauncher.launch("${state.bankName.ifBlank { "题库" }}.shuatixing.json") },
             ) {
                 Icon(Icons.Rounded.FileDownload, contentDescription = "导出题库")
+            }
+            IconButton(
+                onClick = { recordsLauncher.launch("${state.bankName.ifBlank { "题库" }}.做题记录.md") },
+            ) {
+                Icon(Icons.Rounded.Assessment, contentDescription = "导出做题记录")
             }
             IconButton(onClick = { showDeleteBank = true }) {
                 Icon(Icons.Rounded.DeleteOutline, contentDescription = "删除题库")
